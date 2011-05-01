@@ -1,6 +1,7 @@
 var http = require('http');
 http.createServer(function (req, res) {
 try{
+
 	getPage(req.url,req.method,function(page,type,num,override){
 		if(override)
 		{
@@ -20,7 +21,7 @@ try{
 				res.end(404)
 			}
 		}
-	})
+	},req)
 }catch(e)
 {
 	console.log(e)
@@ -28,7 +29,7 @@ try{
 	res.end('You broke it.  You Monster.\n');
 }
 }).listen(process.env.VMC_APP_PORT);
-function getPage(path,method,callback)
+function getPage(path,method,callback,org)
 {
 	try{
 		var data=null;
@@ -41,14 +42,22 @@ function getPage(path,method,callback)
 		};
 		var req = http.request(options, function(res) {
 		  console.log("PAGE: "+path)
+		 
 		  console.log('STATUS: ' + res.statusCode);
+			try{
+				if(org && org.headers)
+			  		console.log('REQ HEADERS: '+JSON.stringify(org.headers));
+			}catch(e){console.log(e)}
+
+		
 		  console.log('HEADERS: ' + JSON.stringify(res.headers));
+		  console.log("\n");
 		  res.on("error",function(e){
 			console.log(e)
 		})
 		if(res.statusCode==301||res.statusCode==302)
 		{
-			getPage(res.headers.location.replace("http://www.webos-internals.org",""),method,callback);
+			getPage(res.headers.location.replace("http://www.webos-internals.org",""),method,callback,org);
 		}
 		else
 		{
