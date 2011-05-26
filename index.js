@@ -1,27 +1,41 @@
 var http = require('http');
+var fs=require('fs');
 http.createServer(function (req, res) {
 try{
-
-	getPage(req.url,req.method,function(page,type,num,override){
-		if(override)
-		{
-			res.writeHead(301,{'Location':'http://www.webos-internals.org'+req.url})
-			res.end()
-		}
-		else
-		{
-			if(page&& page!="null")
+	if(req.url=="/robots.txt")
+	{
+		res.writeHead(200,{'Content-Type':'text/plain'})
+		console.log(fs.realpathSync("./pages/robots.txt"))
+		fs.readFile("./pages/robots.txt","utf8",function(err,data){
+			if(err)
+			console.log(err)
+			res.end(data);
+		})
+	}
+	else
+	{
+		getPage(req.url,req.method,function(page,type,num,override){
+			if(override)
 			{
-				res.writeHead(num||200,{'Content-Type': type["content-type"]});
-				res.end(page);	
+				res.writeHead(301,{'Location':'http://www.webos-internals.org'+req.url})
+				res.end()
 			}
 			else
 			{
-				res.writeHead(404)
-				res.end(404)
+				if(page&& page!="null")
+				{
+					res.writeHead(num||200,{'Content-Type': type["content-type"]});
+					res.end(page);	
+				}
+				else
+				{
+					res.writeHead(404)
+					res.end(404)
+				}
 			}
-		}
-	},req)
+		},req)	
+	}
+
 }catch(e)
 {
 	console.log(e)
